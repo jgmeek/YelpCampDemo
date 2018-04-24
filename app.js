@@ -1,36 +1,15 @@
 var express    = require("express"),
     app        = express(),
     bodyParser = require("body-parser"),
-    mongoose   = require("mongoose");
+    mongoose   = require("mongoose"),
+    Campground = require("./models/campground"),
+    Comment    = require("./models/comment"),
+    seedDB     = require("./seeds");
 
 mongoose.connect("mongodb://localhost/yelp_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-// SCHEMA SETUP
-var campgroundSchema = new mongoose.Schema({
-   name: String,
-   image: String,
-   description: String
-});
-
-var Campground = mongoose.model("Campground", campgroundSchema);
-
-/*Campground.create(
-   {
-      name: "Jasper",
-      image: "https://i2.wp.com/www.jaspernationalpark.com/wp-content/uploads/2010/07/JasperNationalPark.jpg",
-      description: "Beautiful Campground!"
-   },
-   function(err, campground) {
-       if(err){
-          console.log(err);
-       }
-       else {
-          console.log("New campground created: ");
-          console.log(campground);
-       }
-   });*/
+seedDB();
 
 app.get("/", function(req, res){
    res.render("landing"); 
@@ -75,7 +54,7 @@ app.get("/campgrounds/new", function(req, res) {
 // SHOW - Shows more information about one campgronud
 app.get("/campgrounds/:id", function(req, res) {
    //Get campground based on id
-   Campground.findById(req.params.id, function(err, foundCampground){
+   Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
       if(err){
          console.log(err);
       }
